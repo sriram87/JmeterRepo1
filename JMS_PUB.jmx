@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Test Plan">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="TT" elementType="Argument">
+            <stringProp name="Argument.name">TT</stringProp>
+            <stringProp name="Argument.value">600</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
+      </elementProp>
+    </TestPlan>
+    <hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="JMS_Publisher">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">5</intProp>
+        <longProp name="ThreadGroup.duration">60</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <PublisherSampler guiclass="JMSPublisherGui" testclass="PublisherSampler" testname="JMS Publisher">
+          <stringProp name="jms.jndi_properties">false</stringProp>
+          <stringProp name="jms.initial_context_factory">org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory</stringProp>
+          <stringProp name="jms.provider_url">tcp://127.0.0.1:61616</stringProp>
+          <stringProp name="jms.connection_factory">ConnectionFactory</stringProp>
+          <stringProp name="jms.topic">dynamicTopics/qainsights</stringProp>
+          <stringProp name="jms.expiration">10000</stringProp>
+          <stringProp name="jms_error_reconnect_on_codes"></stringProp>
+          <stringProp name="jms.priority"></stringProp>
+          <stringProp name="jms.security_principle">admin</stringProp>
+          <stringProp name="jms.security_credentials">admin</stringProp>
+          <stringProp name="jms.text_message">${JMS_MESSAGE_CONTENT}</stringProp>
+          <stringProp name="jms.input_file"></stringProp>
+          <stringProp name="jms.random_path"></stringProp>
+          <stringProp name="jms.config_choice">jms_use_text</stringProp>
+          <stringProp name="jms.config_msg_type">jms_text_message</stringProp>
+          <stringProp name="jms.iterations">10</stringProp>
+          <boolProp name="jms.authenticate">false</boolProp>
+          <elementProp name="jms.jmsProperties" elementType="JMSProperties">
+            <collectionProp name="JMSProperties.properties"/>
+          </elementProp>
+        </PublisherSampler>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">def randomNum = new Random().nextInt(1000000) 
+def timestamp = new Date().format(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)
+
+def jsonContent = &quot;&quot;&quot;
+{
+    &quot;event_type&quot;: &quot;ORDER_PLACED&quot;,
+    &quot;transaction_id&quot;: &quot;${UUID.randomUUID().toString()}&quot;,
+    &quot;amount&quot;: ${randomNum},
+    &quot;timestamp&quot;: &quot;${timestamp}&quot;,
+    &quot;user_info&quot;: &quot;User-${new Random().nextInt(1000)}&quot;
+}
+&quot;&quot;&quot;
+// Store the generated content in a JMeter variable
+vars.put(&quot;JMS_MESSAGE_CONTENT&quot;, jsonContent.stripIndent())</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+        </hashTree>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="ThinkTime" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">${TT}</stringProp>
+        </TestAction>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="JMS_Subscribers">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">5</intProp>
+        <longProp name="ThreadGroup.duration">60</longProp>
+        <longProp name="ThreadGroup.delay">2</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <SubscriberSampler guiclass="JMSSubscriberGui" testclass="SubscriberSampler" testname="JMS Subscriber">
+          <stringProp name="jms.jndi_properties">false</stringProp>
+          <stringProp name="jms.initial_context_factory">org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory</stringProp>
+          <stringProp name="jms.provider_url">tcp://127.0.0.1:61616</stringProp>
+          <stringProp name="jms.connection_factory">ConnectionFactory</stringProp>
+          <stringProp name="jms.topic">dynamicTopics/qainsights</stringProp>
+          <stringProp name="jms.security_principle"></stringProp>
+          <stringProp name="jms.security_credentials"></stringProp>
+          <boolProp name="jms.authenticate">false</boolProp>
+          <stringProp name="jms.iterations">10</stringProp>
+          <stringProp name="jms.read_response">true</stringProp>
+          <stringProp name="jms.client_choice">jms_subscriber_receive</stringProp>
+          <stringProp name="jms_error_reconnect_on_codes"></stringProp>
+          <stringProp name="jms.timeout">2000</stringProp>
+        </SubscriberSampler>
+        <hashTree/>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="ThinkTime" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">${TT}</stringProp>
+        </TestAction>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="JMS Point-to-Point" enabled="false">
+        <intProp name="ThreadGroup.num_threads">10</intProp>
+        <intProp name="ThreadGroup.ramp_time">5</intProp>
+        <longProp name="ThreadGroup.duration">60</longProp>
+        <longProp name="ThreadGroup.delay">3</longProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <JMSSampler guiclass="JMSSamplerGui" testclass="JMSSampler" testname="JMS Point-to-Point" enabled="true">
+          <stringProp name="JMSSampler.queueconnectionfactory">ConnectionFactory</stringProp>
+          <stringProp name="JMSSampler.SendQueue">Q.REQ</stringProp>
+          <stringProp name="JMSSampler.ReceiveQueue">Q.RPL</stringProp>
+          <intProp name="JMSSampler.communicationStyle">1</intProp>
+          <boolProp name="JMSSampler.isNonPersistent">false</boolProp>
+          <boolProp name="JMSSampler.useReqMsgIdAsCorrelId">false</boolProp>
+          <stringProp name="JMSSampler.timeout">2000</stringProp>
+          <stringProp name="HTTPSamper.xml_data">${JMS_MESSAGE_CONTENT}</stringProp>
+          <stringProp name="JMSSampler.initialContextFactory">org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory</stringProp>
+          <stringProp name="JMSSampler.contextProviderUrl">tcp://127.0.0.1:61616</stringProp>
+          <elementProp name="JMSSampler.jndiProperties" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="queue.Q.REQ" elementType="Argument">
+                <stringProp name="Argument.name">queue.Q.REQ</stringProp>
+                <stringProp name="Argument.value">qainsights.demo</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+              <elementProp name="queue.Q.RPL" elementType="Argument">
+                <stringProp name="Argument.name">queue.Q.RPL</stringProp>
+                <stringProp name="Argument.value">qainsights.demo</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <elementProp name="arguments" elementType="JMSProperties">
+            <collectionProp name="JMSProperties.properties">
+              <elementProp name="" elementType="JMSProperty">
+                <stringProp name="JMSProperty.name">JMSCorrelationID</stringProp>
+                <stringProp name="JMSProperty.value">${__UUID}</stringProp>
+                <stringProp name="JMSProperty.type">java.lang.String</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </JMSSampler>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">def randomNum = new Random().nextInt(1000000) 
+def timestamp = new Date().format(&quot;yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSSZ&quot;)
+
+def jsonContent = &quot;&quot;&quot;
+{
+    &quot;event_type&quot;: &quot;ORDER_PLACED&quot;,
+    &quot;transaction_id&quot;: &quot;${UUID.randomUUID().toString()}&quot;,
+    &quot;amount&quot;: ${randomNum},
+    &quot;timestamp&quot;: &quot;${timestamp}&quot;,
+    &quot;user_info&quot;: &quot;User-${new Random().nextInt(1000)}&quot;
+}
+&quot;&quot;&quot;
+// Store the generated content in a JMeter variable
+vars.put(&quot;JMS_MESSAGE_CONTENT&quot;, jsonContent.stripIndent())</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+        </hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="JSR223 Sampler" enabled="false">
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="script">import javax.jms.*;
+import org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory;
+
+public class JmsResponder {
+    public static void main(String[] args) throws Exception {
+        String brokerUrl = &quot;tcp://127.0.0.1:61616&quot;;
+        String requestQueueName = &quot;REQ.QUEUE&quot;;
+
+        // Connection factory
+        ActiveMQConnectionFactory cf = new ActiveMQConnectionFactory(brokerUrl);
+        Connection connection = cf.createConnection();
+        connection.start();
+
+        // Non-transacted, auto-ack
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        // Request queue
+        Queue requestQueue = session.createQueue(requestQueueName);
+
+        // Consumer for incoming requests
+        MessageConsumer consumer = session.createConsumer(requestQueue);
+
+        System.out.println(&quot;Responder listening on &quot; + requestQueueName);
+
+        while (true) {
+            Message request = consumer.receive();
+            if (request == null) continue;
+
+            String correlationId = request.getJMSCorrelationID();
+            Destination replyDest = request.getJMSReplyTo();
+
+            String body;
+            if (request instanceof TextMessage) {
+                body = ((TextMessage) request).getText();
+            } else {
+                body = &quot;Unsupported message type: &quot; + request.getClass().getSimpleName();
+            }
+
+            System.out.println(&quot;Received request: &quot; + body + &quot; (correlationId=&quot; + correlationId + &quot;)&quot;);
+
+            // Create reply
+            TextMessage reply = session.createTextMessage(&quot;Reply: &quot; + body);
+            if (correlationId != null) {
+                reply.setJMSCorrelationID(correlationId);
+            }
+
+            // Send reply back to the temporary queue
+            MessageProducer producer = session.createProducer(replyDest);
+            producer.send(reply);
+            producer.close();
+
+            System.out.println(&quot;Sent reply for correlationId=&quot; + correlationId);
+        }
+    }
+}</stringProp>
+          <stringProp name="scriptLanguage">java</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="ThinkTime" enabled="true">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">${TT}</stringProp>
+        </TestAction>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+        <boolProp name="ResultCollector.error_logging">true</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
